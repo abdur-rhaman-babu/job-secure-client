@@ -39,15 +39,21 @@ const MyPostedJobs = () => {
           </p>
         </div>
         <div className="flex gap-3">
-          <button className="text-white bg-red-600 px-2 py-1 rounded-sm"
+          <button
+            className="text-white bg-red-600 px-2 py-1 rounded-sm"
             onClick={() => {
               toast.dismiss(t.id);
-              handleDeleteJob(id)
+              handleDeleteJob(id);
             }}
           >
             Yes
           </button>
-          <button className="text-white bg-green-600 px-2 py-1 rounded-sm" onClick={() => toast.dismiss(t.id)}>Cancel</button>
+          <button
+            className="text-white bg-green-600 px-2 py-1 rounded-sm"
+            onClick={() => toast.dismiss(t.id)}
+          >
+            Cancel
+          </button>
         </div>
       </div>
     ));
@@ -117,7 +123,7 @@ const MyPostedJobs = () => {
                   {jobs.map((job) => (
                     <tr key={job._id}>
                       <td className="px-4 py-4 text-sm text-gray-500  whitespace-nowrap">
-                        {job.category}
+                        {job.title}
                       </td>
 
                       <td className="px-4 py-4 text-sm text-gray-500  whitespace-nowrap">
@@ -129,11 +135,14 @@ const MyPostedJobs = () => {
                       </td>
                       <td className="px-4 py-4 text-sm whitespace-nowrap">
                         <div className="flex items-center gap-x-2">
-                          <p
-                            className={`px-3 py-1  text-blue-500 bg-blue-100/60 text-xs  rounded-full`}
+                          <span
+                            className={`px-3 py-1 font-bold text-[8px] text-blue-800 uppercase
+                            ${job.category === "Web Development" && "text-red-600"}
+                            ${job.category === "Digital Marketing" && "text-green-600"}
+                            bg-gray-100 rounded-full`}
                           >
-                            {job.title}
-                          </p>
+                            {job.category}
+                          </span>
                         </div>
                       </td>
                       <td className="px-4 py-4 text-sm text-gray-500  whitespace-nowrap">
