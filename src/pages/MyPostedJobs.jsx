@@ -3,15 +3,33 @@ import { Link } from "react-router-dom";
 import { AuthContext } from "./../providers/AuthProvider";
 import axios from "axios";
 import { format } from "date-fns";
+import toast from "react-hot-toast";
 
 const MyPostedJobs = () => {
   const { user } = useContext(AuthContext);
-  const [jobs, setJobs] = useState([])
+  const [jobs, setJobs] = useState([]);
 
-  useEffect(()=>{
-    axios.get(`http://localhost:9000/jobs/${user?.email}`)
-    .then(res=> setJobs(res.data))
-  },[user])
+  useEffect(() => {
+    fetchAllJobs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
+  const fetchAllJobs = async () => {
+    await axios
+      .get(`http://localhost:9000/jobs/${user?.email}`)
+      .then((res) => setJobs(res.data));
+  };
+
+  const handleDeleteJob = async (id) => {
+    await axios.delete(`http://localhost:9000/job/${id}`)
+    .then(res => {
+      console.log(res.data)
+      if(res.data.deletedCount > 0){
+        toast.success('delete data successfully')
+        fetchAllJobs()
+      }
+    })
+  };
 
   return (
     <section className="container px-4 mx-auto pt-12">
@@ -74,16 +92,16 @@ const MyPostedJobs = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200 ">
-                  {
-                    jobs.map(job=> <tr key={job._id}>
+                  {jobs.map((job) => (
+                    <tr key={job._id}>
                       <td className="px-4 py-4 text-sm text-gray-500  whitespace-nowrap">
                         {job.category}
                       </td>
-  
+
                       <td className="px-4 py-4 text-sm text-gray-500  whitespace-nowrap">
-                      {format(new Date(job.deadLine), 'P')}
+                        {format(new Date(job.deadLine), "P")}
                       </td>
-  
+
                       <td className="px-4 py-4 text-sm text-gray-500  whitespace-nowrap">
                         ${job.price.minPrice} - ${job.price.maxPrice}
                       </td>
@@ -92,16 +110,19 @@ const MyPostedJobs = () => {
                           <p
                             className={`px-3 py-1  text-blue-500 bg-blue-100/60 text-xs  rounded-full`}
                           >
-                           {job.title}
+                            {job.title}
                           </p>
                         </div>
                       </td>
                       <td className="px-4 py-4 text-sm text-gray-500  whitespace-nowrap">
-                        {job.description.substring(0,18)}....
+                        {job.description.substring(0, 18)}....
                       </td>
                       <td className="px-4 py-4 text-sm whitespace-nowrap">
                         <div className="flex items-center gap-x-6">
-                          <button className="text-gray-500 transition-colors duration-200   hover:text-red-500 focus:outline-none">
+                          <button
+                            onClick={() => handleDeleteJob(job._id)}
+                            className="text-gray-500 transition-colors duration-200   hover:text-red-500 focus:outline-none"
+                          >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               fill="none"
@@ -117,7 +138,7 @@ const MyPostedJobs = () => {
                               />
                             </svg>
                           </button>
-  
+
                           <Link
                             to={`/update/1`}
                             className="text-gray-500 transition-colors duration-200   hover:text-yellow-500 focus:outline-none"
@@ -139,8 +160,8 @@ const MyPostedJobs = () => {
                           </Link>
                         </div>
                       </td>
-                    </tr>)
-                  }
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
