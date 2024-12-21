@@ -2,15 +2,17 @@ import axios from "axios";
 import { useContext, useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { AuthContext } from "../providers/AuthProvider";
+import toast from "react-hot-toast";
 
 const UpdateJob = () => {
   const { user } = useContext(AuthContext);
+  const navigate = useNavigate()
   const { id } = useParams();
   const [startDate, setStartDate] = useState(new Date());
   const [job, setJob] = useState({});
-  const { price, title, description, category } = job || {};
+  const { price, title, description, category, bid_count } = job || {};
 
   useEffect(() => {
     fetchJob();
@@ -24,6 +26,41 @@ const UpdateJob = () => {
     });
   };
 
+  const handleUpdatedJob = (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const title = form.job_title.value;
+    const category = form.category.value;
+    const minPrice = parseFloat(form.min_price.value);
+    const maxPrice = parseFloat(form.max_price.value);
+    const description = form.description.value;
+    const email = form.email.value;
+    const deadLine = startDate;
+    const price = { minPrice, maxPrice };
+    const updatedJob = {
+      title,
+      deadLine,
+      category,
+      price,
+      description,
+      buyer: {
+        email,
+        name: user?.displayName,
+        photo: user?.photoURL,
+      },
+      bid_count
+    };
+
+    // create jobs
+    axios.post(`http://localhost:9000/update/${id}`, updatedJob).then((res) => {
+      console.log(res.data);
+      if(res.data.modifiedCount){
+        toast.success('jobs successfully updated')
+        navigate('/my-posted-jobs')
+      }
+    });
+  };
+
   return (
     <div className="flex justify-center items-center min-h-[calc(100vh-306px)] my-12">
       <section className=" p-2 md:p-6 mx-auto bg-white rounded-md shadow-md ">
@@ -31,7 +68,7 @@ const UpdateJob = () => {
           Update a Job
         </h2>
 
-        <form>
+        <form onSubmit={handleUpdatedJob}>
           <div className="grid grid-cols-1 gap-6 mt-4 sm:grid-cols-2">
             <div>
               <label className="text-gray-700 " htmlFor="job_title">
@@ -126,7 +163,7 @@ const UpdateJob = () => {
           </div>
           <div className="flex justify-end mt-6">
             <button className="px-8 py-2.5 leading-5 text-white transition-colors duration-300 transhtmlForm bg-gray-700 rounded-md hover:bg-gray-600 focus:outline-none focus:bg-gray-600">
-              Save
+              Update
             </button>
           </div>
         </form>
