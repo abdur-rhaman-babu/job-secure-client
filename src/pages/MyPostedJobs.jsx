@@ -21,14 +21,36 @@ const MyPostedJobs = () => {
   };
 
   const handleDeleteJob = async (id) => {
-    await axios.delete(`http://localhost:9000/job/${id}`)
-    .then(res => {
-      console.log(res.data)
-      if(res.data.deletedCount > 0){
-        toast.success('delete data successfully')
-        fetchAllJobs()
+    await axios.delete(`http://localhost:9000/job/${id}`).then((res) => {
+      console.log(res.data);
+      if (res.data.deletedCount > 0) {
+        toast.success("delete data successfully");
+        fetchAllJobs();
       }
-    })
+    });
+  };
+
+  const handleDeleteWithToast = (id) => {
+    toast((t) => (
+      <div className="flex items-center gap-3">
+        <div>
+          <p>
+            Are you <b>sure?</b>
+          </p>
+        </div>
+        <div className="flex gap-3">
+          <button className="text-white bg-red-600 px-2 py-1 rounded-sm"
+            onClick={() => {
+              toast.dismiss(t.id);
+              handleDeleteJob(id)
+            }}
+          >
+            Yes
+          </button>
+          <button className="text-white bg-green-600 px-2 py-1 rounded-sm" onClick={() => toast.dismiss(t.id)}>Cancel</button>
+        </div>
+      </div>
+    ));
   };
 
   return (
@@ -120,7 +142,7 @@ const MyPostedJobs = () => {
                       <td className="px-4 py-4 text-sm whitespace-nowrap">
                         <div className="flex items-center gap-x-6">
                           <button
-                            onClick={() => handleDeleteJob(job._id)}
+                            onClick={() => handleDeleteWithToast(job._id)}
                             className="text-gray-500 transition-colors duration-200   hover:text-red-500 focus:outline-none"
                           >
                             <svg
