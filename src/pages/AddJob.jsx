@@ -3,11 +3,13 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { AuthContext } from "../providers/AuthProvider";
 import axios from "axios";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 const AddJob = () => {
   const [startDate, setStartDate] = useState(new Date());
   const { user } = useContext(AuthContext);
-
+  const navigate = useNavigate()
   const handleAddJob = (e) => {
     e.preventDefault();
     const form = e.target;
@@ -19,6 +21,9 @@ const AddJob = () => {
     const email = form.email.value;
     const deadLine = startDate;
     const price = { minPrice, maxPrice };
+    if(price.minPrice > price.maxPrice){
+      return toast.error('Min price less than max price')
+    }
     const newJob = {
       title,
       deadLine,
@@ -37,7 +42,8 @@ const AddJob = () => {
     axios.post("http://localhost:9000/jobs", newJob).then((res) => {
       console.log(res.data);
       if(res.data.insertedId){
-        alert('jobs successfully added')
+        toast.success('job successfully added')
+        navigate('/')
       }
     });
   };

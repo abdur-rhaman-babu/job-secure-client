@@ -3,17 +3,19 @@ import { useContext, useEffect, useState } from "react";
 
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { AuthContext } from "../providers/AuthProvider";
 import { compareAsc, format } from "date-fns";
 import toast from "react-hot-toast";
 
 const JobDetails = () => {
+  const navigate = useNavigate();
   const { user } = useContext(AuthContext);
   const { id } = useParams();
   const [startDate, setStartDate] = useState(new Date());
   const [job, setJob] = useState({});
-  const { price, title, description, category, deadLine, buyer } = job || {};
+  const { price, title, description, category, deadLine, buyer, _id } =
+    job || {};
 
   useEffect(() => {
     fetchJobDetails();
@@ -34,31 +36,42 @@ const JobDetails = () => {
     const bidPrice = form.price.value;
     const comment = form.comment.value;
     const email = user?.email;
+    const jobId = _id;
 
     // 1. deadline validation
     if (compareAsc(new Date(), new Date(deadLine)) === 1) {
       return toast.error("Deadline crossed, Bidding forbidden!!");
     }
-    
-    // 2. price validation 
-    if(bidPrice > price.maxPrice){
-      return toast.error('offer less or at least equal to maximum price!!')
+
+    // 2. price validation
+    if (bidPrice > price.maxPrice) {
+      return toast.error("offer less or at least equal to maximum price!!");
     }
 
     // 3. user validation
-    if(user?.email === buyer?.email){
-      return toast.error('Having buyer and user same so bidding forbidden!!!')
+    if (user?.email === buyer?.email) {
+      return toast.error("Having buyer and user same so bidding forbidden!!!");
     }
 
-    // 4. offered deadline 
-    if(compareAsc(new Date(startDate), new Date(deadLine))===1){
-      return toast.error('offer a deadline within deadline')
+    // 4. offered deadline
+    if (compareAsc(new Date(startDate), new Date(deadLine)) === 1) {
+      return toast.error("offer a deadline within deadline");
     }
 
-    const bidData = { bidPrice, comment, email, deadLine };
+    const bidData = { bidPrice, comment, email, deadLine:startDate, jobId, title, category };
     console.log(bidData);
 
-   
+    try {
+      await axios.post("http://localhost:9000/add-bid", bidData).then((res) => {
+        if (res.data.insertedId) {
+          toast.success("Added bid successfully");
+          navigate("/my-bids");
+        }
+      });
+    } catch (err) {
+      console.log(err);
+      toast.error(err?.response?.data) 
+    }
   };
 
   return (
